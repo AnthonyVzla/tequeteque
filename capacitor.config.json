@@ -1,0 +1,6 @@
+{
+  "appId": "com.tequeneriadelicias.app",
+  "appName": "Tequeneria Delicias",
+  "webDir": ".",
+  "server": {"androidScheme":"https"}
+}

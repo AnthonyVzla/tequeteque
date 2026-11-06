@@ -1,0 +1,12 @@
+{
+  "name": "Tequeñería Delicias",
+  "short_name": "Delicias",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fff8e8",
+  "theme_color": "#f2b51d",
+  "description": "Juego y programa de puntos de Tequeñería Delicias",
+  "icons": [
+    {"src":"./logo.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}

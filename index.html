@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#f2b51d">
+  <title>Tequeñería Delicias</title>
+  <link rel="manifest" href="./manifest.json">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{--yellow:#f7c928;--orange:#ef9f1b;--brown:#6d3518;--cream:#fff8e8;--green:#3e8e41;--red:#e24b4b}
+    *{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,sans-serif;color:var(--brown);background:linear-gradient(135deg,#fff8dc,#ffe9af);min-height:100vh}
+    button,input,select{font:inherit}button{cursor:pointer;border:0;border-radius:12px;font-weight:800}
+    .hidden{display:none!important}.app{max-width:1100px;margin:auto;padding:18px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:20px}.brand img{width:58px;height:58px}.user-chip{background:white;padding:8px 12px;border-radius:999px;box-shadow:0 4px 18px #8a521a22}
+    .auth-wrap{min-height:100vh;display:grid;place-items:center;padding:20px}.card{background:#ffffffea;border-radius:22px;padding:24px;box-shadow:0 18px 50px #7c501c2e;border:2px solid #fff}
+    .auth-card{width:min(470px,100%)}h1,h2,h3{margin-top:0}.field{margin:10px 0}.field label{display:block;font-size:13px;font-weight:800;margin-bottom:5px}
+    input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #dfcba6;background:white}.primary{background:var(--yellow);color:var(--brown);padding:12px 18px;width:100%}.secondary{background:#6d3518;color:white;padding:10px 14px}.link{background:none;color:#a46c00;text-decoration:underline;padding:4px}
+    .actions{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.action{min-height:150px;background:white;box-shadow:0 8px 25px #8a521a20;font-size:18px;color:var(--brown)}.action:hover{transform:translateY(-3px)}.action b{display:block;font-size:34px;margin-bottom:7px}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}.stat{background:white;border-radius:16px;padding:14px;text-align:center}.stat strong{display:block;font-size:28px;color:#db8a00}
+    table{width:100%;border-collapse:collapse;background:white;border-radius:14px;overflow:hidden}th,td{padding:11px;text-align:left;border-bottom:1px solid #eee}th{background:#ffe69a}
+    .modal-backdrop{position:fixed;inset:0;background:#4a260b99;display:grid;place-items:center;padding:20px;z-index:20}.modal{background:white;width:min(600px,100%);max-height:90vh;overflow:auto;border-radius:20px;padding:22px}.modal.wide{width:min(850px,100%)}
+    .prize-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.prize{background:var(--cream);border-radius:15px;padding:14px}.prize strong{display:block}
+    #gameCanvas{display:block;width:100%;max-height:70vh;background:#8ed7ff;border-radius:16px;touch-action:none}.game-wrap{position:relative}.game-score{position:absolute;top:12px;left:16px;font-size:22px;background:#ffffffcc;padding:8px 12px;border-radius:10px}
+    .tabs{display:flex;gap:8px;overflow:auto;margin-bottom:14px}.tab{white-space:nowrap;background:white;padding:10px 14px}.tab.active{background:var(--yellow)}
+    .alert{padding:10px;border-radius:10px;background:#ffe2e2;color:#951818;margin:10px 0}.success{padding:10px;border-radius:10px;background:#dff6dd;color:#286c29;margin:10px 0}
+    .avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;background:#ddd}.admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.admin-grid .stat{border:2px solid #ffe89a}
+    @media(max-width:650px){.actions{grid-template-columns:1fr}.action{min-height:105px}.stats{grid-template-columns:1fr}.topbar{align-items:flex-start}.brand span{max-width:160px}.app{padding:12px}}
+  </style>
+</head>
+<body>
+<div id="authView" class="auth-wrap">
+  <div class="card auth-card">
+    <div class="brand" style="justify-content:center;margin-bottom:10px">
+      <img src="./logo.svg" alt="Tequeñería Delicias"><span>Tequeñería Delicias</span>
+    </div>
+    <div id="authMessage"></div>
+    <div id="loginForm">
+      <h2>Iniciar sesión</h2>
+      <div class="field"><label>Correo electrónico</label><input id="loginEmail" type="email" autocomplete="email"></div>
+      <div class="field"><label>Contraseña</label><input id="loginPassword" type="password" autocomplete="current-password"></div>
+      <button class="primary" onclick="login()">Entrar</button>
+      <p>¿No tienes cuenta? <button class="link" onclick="showRegister()">Crear cuenta</button></p>
+    </div>
+    <div id="registerForm" class="hidden">
+      <h2>Crear perfil</h2>
+      <div class="field"><label>Nombre</label><input id="regFirst"></div>
+      <div class="field"><label>Apellido</label><input id="regLast"></div>
+      <div class="field"><label>Cédula</label><input id="regId"></div>
+      <div class="field"><label>Teléfono</label><input id="regPhone" type="tel"></div>
+      <div class="field"><label>Correo</label><input id="regEmail" type="email"></div>
+      <div class="field"><label>Contraseña (mínimo 8 caracteres)</label><input id="regPassword" type="password"></div>
+      <div class="field"><label>Código de referido (opcional)</label><input id="regReferral" placeholder="Ej: DELI-ABC123"></div>
+      <p><b>Importante:</b> para ser verificada la cuenta y poder redimir puntos debe colocar foto de perfil.</p>
+      <button class="primary" onclick="register()">Registrarme</button>
+      <p><button class="link" onclick="showLogin()">Ya tengo cuenta</button></p>
+    </div>
+  </div>
+</div>
+
+<div id="appView" class="hidden app">
+  <header class="topbar">
+    <div class="brand"><img src="./logo.svg" alt=""><span>Tequeñería Delicias</span></div>
+    <div style="text-align:right"><div id="userName" class="user-chip"></div><button class="link" onclick="logout()">Cerrar sesión</button></div>
+  </header>
+  <div id="userView">
+    <div class="stats">
+      <div class="stat">Puntos disponibles<strong id="balance">0</strong></div>
+      <div class="stat">Puntos del ranking<strong id="periodPoints">0</strong></div>
+      <div class="stat">Nivel<strong id="level">1</strong></div>
+    </div>
+    <div class="actions">
+      <button class="action" onclick="openGame()"><b>🎮</b>Jugar</button>
+      <button class="action" onclick="openRanking()"><b>🏆</b>Ranking</button>
+      <button class="action" onclick="openPrizes()"><b>🎁</b>Canjear puntos</button>
+    </div>
+    <button class="secondary" style="margin-top:14px" onclick="openProfile()">Foto y datos de perfil</button>
+    <button class="secondary hidden" style="margin-top:14px" id="adminButton" onclick="showAdmin()">Administración</button>
+  </div>
+  <div id="adminView" class="hidden">
+    <button class="secondary" onclick="showUser()">← Vista de jugador</button>
+    <h2>Administración</h2>
+    <div class="tabs">
+      <button class="tab active" onclick="adminTab('dashboard',this)">Resumen</button>
+      <button class="tab" onclick="adminTab('codes',this)">Códigos de compra</button>
+      <button class="tab" onclick="adminTab('users',this)">Usuarios</button>
+      <button class="tab" onclick="adminTab('prizes',this)">Premios</button>
+      <button class="tab" onclick="adminTab('referrals',this)">Referidos</button>
+    </div>
+    <div id="adminContent"></div>
+  </div>
+</div>
+
+<div id="gameModal" class="modal-backdrop hidden"><div class="modal wide">
+  <div style="display:flex;justify-content:space-between"><h2>Tequeño Runner</h2><button class="secondary" onclick="closeGame()">Salir</button></div>
+  <div class="game-wrap"><div id="liveScore" class="game-score">0 pts</div><canvas id="gameCanvas" width="900" height="420"></canvas></div>
+  <p>Salta con ESPACIO, ↑ o tocando la pantalla.</p>
+</div></div>
+<script src="./app.js"></script>
+</body>
+</html>

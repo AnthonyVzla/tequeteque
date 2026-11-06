@@ -1,0 +1,5 @@
+{
+  "name":"tequeneria-delicias",
+  "private":true,
+  "scripts":{"serve":"npx serve .","android":"npx cap sync android"}
+}
